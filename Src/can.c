@@ -18,6 +18,19 @@ uint8_t TxData[8];
 uint8_t RxData[8];
 uint32_t TxMailbox;
 
+CanIdData_t can_vector[CAN_IDS_NUMBER];
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
+	/* Prevent unused argument(s) compilation warning */
+	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
+	canMessageReceived(RxHeader.StdId, RxData);
+
+	/* NOTE : This function Should not be modified, when the callback is needed,
+	 the HAL_CAN_RxFifo0FullCallback could be implemented in the user
+	 file
+	 */
+}
+
 void CAN_CofigFilter() {
 	sFilterConfig.FilterBank = 0;
 	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
@@ -36,15 +49,31 @@ void CAN_CofigFilter() {
 }
 
 void CAN_Init() {
+	sFilterConfig.FilterBank = 0;
+	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+	sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+	sFilterConfig.FilterIdHigh = 0x0000;
+	sFilterConfig.FilterIdLow = 0x0000;
+	sFilterConfig.FilterMaskIdHigh = 0x0000;
+	sFilterConfig.FilterMaskIdLow = 0x0000;
+	sFilterConfig.FilterFIFOAssignment = CAN_FILTER_FIFO0;
+	sFilterConfig.FilterActivation = ENABLE;
+	sFilterConfig.SlaveStartFilterBank = 14;
+	if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK) {
+		/* Filter configuration Error */
+		Error_Handler();
+	}
+
 	if (HAL_CAN_Start(&hcan) != HAL_OK) {
 		/* Start Error */
 		Error_Handler();
 	}
-	if (HAL_CAN_ActivateNotification(&hcan,
-			CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_TX_MAILBOX_EMPTY) != HAL_OK) {
+	if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING)
+			!= HAL_OK) {
 		/* Notification Error */
 		Error_Handler();
 	}
+
 	TxHeader.ExtId = 0x01;
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.IDE = CAN_ID_STD;
@@ -67,10 +96,9 @@ void CAN_AddToBuffer(uint16_t word0, uint16_t word1, uint16_t word2,
 void CAN_SendMessage(uint32_t id) {
 	TxHeader.StdId = id;
 //	if (HAL_CAN_GetTxMailboxesFreeLevel(&hcan) > 0)
-		if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox)
-				!= HAL_OK) {
+	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK) {
 		Error_Handler();
-		}
+	}
 	HAL_Delay(20);
 }
 
@@ -80,3 +108,12 @@ void CAN_Transmit(uint16_t word0, uint16_t word1, uint16_t word2,
 	CAN_SendMessage(id);
 }
 
+void canMessageReceived(uint16_t id, uint8_t *data) {
+	if (id > CAN_IDS_NUMBER - 1)
+		return;
+	uint16_t *data_word = (uint16_t*) data;
+	can_vector[id].word_0 = data_word[0];
+	can_vector[id].word_1 = data_word[1];
+	can_vector[id].word_2 = data_word[2];
+	can_vector[id].word_3 = data_word[3];
+}

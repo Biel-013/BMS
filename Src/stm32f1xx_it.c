@@ -60,7 +60,7 @@
 /* USER CODE BEGIN 0 */
 extern UART_HandleTypeDef huart3;
 extern BMS_struct* BMS;
-uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];	/* Local DMA buffer for circular DMA */
+extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];	/* Local DMA buffer for circular DMA */
 uint8_t uart_message[DMA_RX_BUFFER_SIZE];
 /* USER CODE END 0 */
 
@@ -289,7 +289,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 0 */
   HAL_CAN_IRQHandler(&hcan);
   /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */
-	//CAN_Receive_IT();
+//	CAN_Receive_IT();
 
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 1 */
 }
@@ -370,4 +370,3 @@ void EXTI15_10_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-

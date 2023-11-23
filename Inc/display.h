@@ -20,7 +20,6 @@
 #define N_PAGE6 6
 #define N_PAGE7 7
 
-uint8_t actual_page;
 
 void display_init();
 void uart3MessageReceived(BMS_struct *BMS);

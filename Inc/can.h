@@ -12,10 +12,19 @@
 
 #define CAN_BUFFER_SIZE	4
 
+typedef struct{
+  uint16_t word_0;
+  uint16_t word_1;
+  uint16_t word_2;
+  uint16_t word_3;
+}CanIdData_t;
+
 #define CAN_ID_PACKS_INITIAL	301//260
 #define CAN_ID_GENERAL1			51
 #define CAN_ID_GENERAL2 		52
+#define CAN_IDS_NUMBER 360
 
+void canMessageReceived(uint16_t id, uint8_t *data);
 void CAN_Init();
 void CAN_AddToBuffer(uint16_t word1, uint16_t word2, uint16_t word3, uint16_t word4);
 void CAN_SendMessage(uint32_t id);

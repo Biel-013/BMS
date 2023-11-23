@@ -18,12 +18,12 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <dma_usart.h>
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bms.h"
+#include "can.h"
 #include "constants.h"
 #include "display.h"
 #include "dwt_delay.h"
@@ -44,7 +44,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
+ ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
 CAN_HandleTypeDef hcan;
@@ -92,7 +92,7 @@ float filter(float old, float new) {
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc) {
 	for(uint8_t i = 0; i < ADC_BUFFER_SIZE; i++) {
 		BMS->c_adc[i] = filter((float)BMS->c_adc[i], (float)adc_buffer[i]);
-		BMS->current[i] = filter(BMS->current[i], ((float)adc_buffer[i] * current_gain[i]) - current_zero[i]);
+		//BMS->current[i] = filter(BMS->current[i], ((float)adc_buffer[i] * current_gain[i]) - current_zero[i]);
 	}
 }
 /* USER CODE END 0 */
@@ -158,10 +158,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	BMS_Monitoring(BMS);
-	BMS_ErrorTreatment(BMS);
-	BMS_Datalloger(BMS);
-	display_show(BMS);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -191,6 +188,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -229,6 +227,7 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
+
   /** Common config
   */
   hadc1.Instance = ADC1;
@@ -242,6 +241,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_0;
@@ -251,6 +251,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_1;
@@ -259,6 +260,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_2;
@@ -267,6 +269,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_3;
@@ -275,6 +278,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_9;
@@ -283,6 +287,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_8;
@@ -319,7 +324,7 @@ static void MX_CAN_Init(void)
   hcan.Init.TimeSeg1 = CAN_BS1_6TQ;
   hcan.Init.TimeSeg2 = CAN_BS2_1TQ;
   hcan.Init.TimeTriggeredMode = DISABLE;
-  hcan.Init.AutoBusOff = ENABLE;
+  hcan.Init.AutoBusOff = DISABLE;
   hcan.Init.AutoWakeUp = DISABLE;
   hcan.Init.AutoRetransmission = DISABLE;
   hcan.Init.ReceiveFifoLocked = DISABLE;
@@ -511,7 +516,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 9600;
+  huart3.Init.BaudRate = 115200;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
@@ -658,4 +663,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
